@@ -1,0 +1,114 @@
+@import "tailwindcss";
+.feedback-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .feedback-container h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .session-info {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+  }
+  
+  .feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .form-control {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  .checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  
+  .checkbox-group input {
+    width: auto;
+  }
+  
+  textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+  }
+  
+  .btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-btn {
+    background-color: #3498db;
+    color: white;
+    align-self: flex-end;
+  }
+  
+  .submit-btn:hover {
+    background-color: #2980b9;
+  }
+  
+  .return-btn {
+    background-color: #2ecc71;
+    color: white;
+    margin-top: 1rem;
+  }
+  
+  .return-btn:hover {
+    background-color: #27ae60;
+  }
+  
+  .thank-you-message {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .thank-you-message h2 {
+    color: #2ecc71;
+    margin-bottom: 1rem;
+  }
+  
+  .star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
+  }
+  
+  .star-rating label {
+    cursor: pointer;
+  }
+  
+  .star-rating input {
+    display: none;
+  }
