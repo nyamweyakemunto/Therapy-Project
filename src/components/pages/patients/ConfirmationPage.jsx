@@ -100,8 +100,7 @@ const ConfirmationContainer = styled.div`
   min-height: calc(100vh - 60px); // Adjust based on your header height
   background-color: #f5f7fa;
   padding: 20px;
-  margin-left: 250px; // Adjust based on your sidebar width
-  width: calc(100% - 250px); // Adjust based on your sidebar width
+  width: 100% ; // Adjust based on your sidebar width
 
   @media (max-width: 768px) {
     margin-left: 0;
@@ -115,7 +114,6 @@ const ConfirmationCard = styled.div`
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 40px;
-  max-width: 800px;
   width: 100%;
 `;
 

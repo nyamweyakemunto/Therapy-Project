@@ -3,7 +3,6 @@
 
 /* Main container with sidebar adjustment */
 .therapist-profile-container {
-    margin-left: 250px; /* Adjust based on your sidebar width */
     padding: 20px;
     transition: margin-left 0.3s ease;
   }
