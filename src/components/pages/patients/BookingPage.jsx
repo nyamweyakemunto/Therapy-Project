@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import SideBar from "../../sideBar";
+import SideBar from "../../PatientSideBar";
 
 const therapists = [
   { id: 1, name: "Dr.Kemunto Nyamweya", specialty: "Anxiety & Stress", availableSlots: ["10:00 AM", "2:00 PM", "5:00 PM"] },

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import styled from 'styled-components';
-import SideBar from '../../sideBar';
+import SideBar from '../../PatientSideBar';
 
 // Sample user data
 const users = {

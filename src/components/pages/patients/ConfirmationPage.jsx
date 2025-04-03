@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import SideBar from '../../sideBar';
+import SideBar from '../../PatientSideBar';
 
 const ConfirmationPage = () => {
   // Get booking details from location state (if coming from a booking form)

@@ -14,11 +14,22 @@ import Feedback from './components/pages/patients/Feedback';
 import PaymentHistory from './components/pages/patients/PaymentHistory';
 import PatientSettings from './components/pages/patients/PatientSettings';
 
+// Therapist Pages
+import TherapistHomepage from './components/pages/therapists/TherapistHomepage';
+import TherapistProfileManagement from './components/pages/therapists/TherapistProfileManagement';
+import TherapistAppointments from './components/pages/therapists/TherapistAppointments';
+import TherapistMessages from './components/pages/therapists/TherapistMessages';
+import TherapistEarnings from './components/pages/therapists/TherapistEarnings';
+import TherapistSettings from './components/pages/therapists/TherapistSettings';
+
+const user = { role: 'therapist' };
 
 function App() {
   return (
     <Router>
         <Routes>
+        {user.role === 'patient' && (
+          <>
             <Route path="/therapists" element={<TherapistSearch />} />
             <Route path="/therapist/:id" element={<TherapistProfile />} />
             <Route path="/booking" element={<BookingPage />} />
@@ -28,7 +39,22 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/payment-history" element={<PaymentHistory />} />
-            <Route path="/settings" element={<PatientSettings />} />              
+            <Route path="/settings" element={<PatientSettings />} />    
+          </>
+        )};
+
+        {/* Therapist Routes */}
+        {user.role === 'therapist' && (
+          <>
+            <Route path="/" element={<TherapistHomepage />} />
+            <Route path="/profile" element={<TherapistProfileManagement />} />
+            <Route path="/appointments" element={<TherapistAppointments />} />
+            <Route path="/messages" element={<TherapistMessages />} />
+            <Route path="/earnings" element={<TherapistEarnings />} />
+            <Route path="/settings" element={<TherapistSettings />} />
+          </>
+        )}
+
         </Routes>
     </Router>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SideBar from '../../sideBar';
+import SideBar from '../../PatientSideBar';
 
 const PaymentHistory = () => {
   // Sample payment history data

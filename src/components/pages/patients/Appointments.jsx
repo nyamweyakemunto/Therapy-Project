@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaHeartbeat, FaCalendarPlus, FaList, FaSave, FaTrash, FaCalendarDay, FaClock, FaCalendarCheck } from 'react-icons/fa';
-import SideBar from '../../sideBar';
+import SideBar from '../../PatientSideBar';
 
 import '../../../App.css';
 const Appointments = () => {

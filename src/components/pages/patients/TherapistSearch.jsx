@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiFilter, FiX, FiStar, FiMapPin, FiClock, FiDollarSign } from 'react-icons/fi';import SideBar from '../../sideBar'
+import { FiSearch, FiFilter, FiX, FiStar, FiMapPin, FiClock, FiDollarSign } from 'react-icons/fi';import SideBar from '../../PatientSideBar'
 
 
 const TherapistSearch = () => {

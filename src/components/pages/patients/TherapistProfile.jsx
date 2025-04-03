@@ -1,5 +1,5 @@
 import React from 'react';
-import SideBar from '../../sideBar';
+import SideBar from '../../PatientSideBar';
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiStar, FiClock, FiMapPin, FiDollarSign, FiCheckCircle } from 'react-icons/fi';
