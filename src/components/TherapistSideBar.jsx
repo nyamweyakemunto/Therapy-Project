@@ -18,6 +18,9 @@ const SideBar = ({children}) => {
         <Link to="/messages" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Messages
         </Link>
+        <Link to ="/feedback" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+          Feedback
+        </Link>
         <Link to="/earnings" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Earnings
         </Link>

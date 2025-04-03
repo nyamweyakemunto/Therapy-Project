@@ -21,6 +21,7 @@ import TherapistAppointments from './components/pages/therapists/TherapistAppoin
 import TherapistMessages from './components/pages/therapists/TherapistMessages';
 import TherapistEarnings from './components/pages/therapists/TherapistEarnings';
 import TherapistSettings from './components/pages/therapists/TherapistSettings';
+import TherapistFeedback from './components/pages/therapists/TherapistFeedback';
 
 const user = { role: 'therapist' };
 
@@ -52,6 +53,7 @@ function App() {
             <Route path="/messages" element={<TherapistMessages />} />
             <Route path="/earnings" element={<TherapistEarnings />} />
             <Route path="/settings" element={<TherapistSettings />} />
+            <Route path="/feedback" element={<TherapistFeedback />} />
           </>
         )}
 
