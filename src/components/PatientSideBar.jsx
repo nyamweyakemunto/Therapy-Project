@@ -4,7 +4,7 @@ const SideBar = ({children}) => {
   return (
     <div className="flex flex-row w-full h-full">
       {/* Sidebar Navigation */}
-      <nav className="flex flex-col gap-4 justify-start fixed h-full p-8 w-64 min-h-screen py-3 bg-[rgb(54,116,181)] text-white no-underline">
+      <nav className="flex flex-col gap-4 justify-start fixed h-full p-8 w-64 min-h-screen py-3 bg-[rgb(54,116,181)] text-white no-underline overflow-y-auto">
       <h1 className='text-xl font-bold text-black'>PATIENT THERAPY</h1>
       <Link to="/" className="py-2 px-3 text-white hover:bg-blue-700  rounded transition">
           Patient Dashboard
@@ -26,6 +26,18 @@ const SideBar = ({children}) => {
         </Link>
         <Link to="/feedback" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Feedback
+        </Link>
+        <Link to="/education" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+          Education Resources
+        </Link>
+        <Link to="/progress" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+          Progress Tracker
+        </Link>
+        <Link to="/payment-methods" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+          Payment Methods
+        </Link>
+        <Link to="/emergency" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+          Emergency Response
         </Link>
         <Link to="/payment-history" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Payment history
