@@ -10,7 +10,7 @@ const PatientPaymentMethods = () => {
   const [paymentAmount, setPaymentAmount] = useState('full');
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
   const [paymentDate, setPaymentDate] = useState('now');
-  const [scheduleDate, setScheduleDate] = useState(null);
+  const [ScheduleDate, setScheduleDate] = useState(null);
 
 
   const paymentHistoryData = [
