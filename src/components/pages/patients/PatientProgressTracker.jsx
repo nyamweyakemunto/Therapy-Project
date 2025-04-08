@@ -1,8 +1,11 @@
 import React from 'react'
+import SideBar from '../../PatientSideBar';
 
 const PatientProgressTracker = () => {
   return (
-    <div>PatientProgressTracker</div>
+    <SideBar>
+        
+    </SideBar>
   )
 }
 
