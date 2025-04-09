@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
-import SideBar from '../../TherapistSideBar';
+import SideBar from '../../PatientSideBar';
 import { TrendingUp, Users, Calendar, Award } from 'lucide-react';
 import { MdOutlineEmojiPeople, MdOutlineShowChart } from 'react-icons/md';
 
