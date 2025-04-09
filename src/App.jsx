@@ -34,7 +34,7 @@ import TherapistSessionNotes from './components/pages/therapists/TherapistSessio
 
 {/*ALTER HERE*/}
 
-const user = { role: 'patient' };
+const user = { role: 'therapist' };
 
 function App() {
   return (
