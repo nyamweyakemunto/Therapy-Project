@@ -33,7 +33,7 @@ import TherapistResources from './components/pages/therapists/TherapistResources
 import TherapistSessionNotes from './components/pages/therapists/TherapistSessionNotes';
 
 {/*ALTER HERE*/}
-const user = { role: 'patient' };
+const user = { role: 'therapist' };
 
 function App() {
   return (

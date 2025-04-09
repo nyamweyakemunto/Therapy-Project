@@ -16,6 +16,7 @@
     "@mui/material": "^7.0.1",
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/vite": "^4.0.17",
+    "chart.js": "^4.4.8",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.6.2",
     "lucide-react": "^0.484.0",
