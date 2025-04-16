@@ -197,5 +197,3 @@ Happy Coding! 💙
 
 
 
-
-Let me know if you’d like a version with clickable badges, screenshots, or a table of contents!
