@@ -12,7 +12,7 @@ const SideBar = ({children}) => {
         <Link to="/profile" className="py-2 px-3 hover:bg-blue-700 rounded transition">
         Profile Management
         </Link>
-        <Link to="/appointments" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/t-appointments" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Appointments
         </Link>
         <Link to="/availability" className="py-2 px-3 hover:bg-blue-700 rounded transition">
@@ -21,7 +21,7 @@ const SideBar = ({children}) => {
         <Link to="/clients" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Client Management
         </Link>
-        <Link to="/messages" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/t-messages" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Messages
         </Link>
         <Link to="/resources" className="py-2 px-3 hover:bg-blue-700 rounded transition">
@@ -33,7 +33,7 @@ const SideBar = ({children}) => {
         <Link to="/earnings" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Earnings
         </Link>
-        <Link to="/settings" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/t-settings" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Settings
         </Link>
       </nav>

@@ -18,13 +18,13 @@ const SideBar = ({children}) => {
         <Link to="/confirmation" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Confirmation Page
         </Link>
-        <Link to="/appointments" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/p-appointments" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Appointments
         </Link>
-        <Link to="/messages" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/p-messages" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Messages
         </Link>
-        <Link to="/feedback" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/p-feedback" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Feedback
         </Link>
         <Link to="/education" className="py-2 px-3 hover:bg-blue-700 rounded transition">
@@ -42,7 +42,7 @@ const SideBar = ({children}) => {
         <Link to="/payment-history" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Payment history
         </Link>
-        <Link to="/settings" className="py-2 px-3 hover:bg-blue-700 rounded transition">
+        <Link to="/p-settings" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Settings
         </Link>
       </nav>
