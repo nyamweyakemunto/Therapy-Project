@@ -1,18 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaHeartbeat, FaCalendarPlus, FaList, FaSave, FaTrash, FaCalendarDay, FaClock, FaCalendarCheck } from 'react-icons/fa';
+import { FaHeartbeat, FaList, FaTrash, FaCalendarDay, FaClock, FaCalendarCheck } from 'react-icons/fa';
 import SideBar from '../../PatientSideBar';
-
 import '../../../App.css';
-const Appointments = () => {
-  // State for form inputs
-  const [formData, setFormData] = useState({
-    clientName: '',
-    appointmentDate: '',
-    appointmentTime: '',
-    therapyType: '',
-    notes: ''
-  });
 
+const Appointments = () => {
   // State for appointments
   const [appointments, setAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,37 +19,6 @@ const Appointments = () => {
   useEffect(() => {
     localStorage.setItem('therapyAppointments', JSON.stringify(appointments));
   }, [appointments]);
-
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [id]: value
-    }));
-  };
-
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    const newAppointment = {
-      id: Date.now(),
-      ...formData,
-      createdAt: new Date().toISOString()
-    };
-
-    setAppointments(prev => [...prev, newAppointment]);
-    setFormData({
-      clientName: '',
-      appointmentDate: '',
-      appointmentTime: '',
-      therapyType: '',
-      notes: ''
-    });
-
-    alert('Appointment booked successfully!');
-  };
 
   // Delete an appointment
   const deleteAppointment = (id) => {
@@ -95,85 +55,13 @@ const Appointments = () => {
       <div className="container">
         <header className="app-header">
           <h1><FaHeartbeat /> Therapy Connect</h1>
-          <p>Manage your therapy appointments with ease</p>
+          <p>View your confirmed therapy appointments</p>
         </header>
 
         <div className="app-content">
-          {/* Appointment Booking Section */}
-          <section className="booking-section">
-            <h2><FaCalendarPlus /> Book New Appointment</h2>
-            <form onSubmit={handleSubmit} className="appointment-form">
-              <div className="form-group">
-                <label htmlFor="clientName">Full Name</label>
-                <input
-                  type="text"
-                  id="clientName"
-                  placeholder="Enter your full name"
-                  value={formData.clientName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="appointmentDate">Date</label>
-                <input
-                  type="date"
-                  id="appointmentDate"
-                  value={formData.appointmentDate}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="appointmentTime">Time</label>
-                <input
-                  type="time"
-                  id="appointmentTime"
-                  value={formData.appointmentTime}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="therapyType">Therapy Type</label>
-                <select
-                  id="therapyType"
-                  value={formData.therapyType}
-                  onChange={handleInputChange}
-                  required
-                >
-                <option value="Select">Select</option>
-                <option value="Pregnancy Therapy">Pregnancy Therapy</option>
-                <option value="Postpartum Therapy">Postpartum Therapy</option>
-                <option value="Trying to conceive Therapy">Trying to Conceive Therapy</option>
-                <option value="Couples Therapy">Couples Therapy</option>
-                <option value="Pregnancy Loss Therapy">Pregnancy Loss Therapy</option>
-                <option value="Family Planning Therapy">Family Planning Therapy</option>
-                </select>
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="notes">Notes (Optional)</label>
-                <textarea
-                  id="notes"
-                  placeholder="Any specific concerns or notes..."
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                />
-              </div>
-              
-              <button type="submit" className="btn btn-primary">
-                <FaSave /> Book Appointment
-              </button>
-            </form>
-          </section>
-
           {/* Appointments List Section */}
           <section className="appointments-section">
-            <h2><FaList /> Your Appointments</h2>
+            <h2><FaList /> Your Confirmed Appointments</h2>
             <div className="filter-controls">
               <input
                 type="text"
@@ -185,7 +73,7 @@ const Appointments = () => {
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
               >
-                <option value="Select">Select</option>
+                <option value="all">All Types</option>
                 <option value="Pregnancy Therapy">Pregnancy Therapy</option>
                 <option value="Postpartum Therapy">Postpartum Therapy</option>
                 <option value="Trying to conceive Therapy">Trying to Conceive Therapy</option>
@@ -199,7 +87,7 @@ const Appointments = () => {
               {filteredAppointments.length === 0 ? (
                 <div className="empty-state">
                   <FaCalendarCheck />
-                  <p>{appointments.length === 0 ? 'No appointments booked yet' : 'No appointments found'}</p>
+                  <p>{appointments.length === 0 ? 'No confirmed appointments yet' : 'No appointments found matching your criteria'}</p>
                 </div>
               ) : (
                 filteredAppointments.map(appointment => (
