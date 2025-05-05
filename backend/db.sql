@@ -16,7 +16,7 @@ CREATE TABLE users (
     phone VARCHAR(20),
     profile_picture VARCHAR(255),
     date_of_birth DATE,
-    approved BOOLEAN,
+    approved BOOLEAN DEFAULT FALSE,
     gender ENUM('male', 'female', 'other', 'prefer_not_to_say'),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -27,12 +27,12 @@ CREATE TABLE users (
     reset_token_expires TIMESTAMP,
     INDEX idx_users_email (email),
     INDEX idx_users_role (role)
-) 
+);
 
--- 2. patients table (Patient-specific information)
+-- 2. patients table (Patient-specific information) - MODIFIED
 CREATE TABLE patients (
-    patient_id INT PRIMARY KEY,
-    user_id INT NOT NULL,
+    patient_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(100),
@@ -46,13 +46,16 @@ CREATE TABLE patients (
     current_medications TEXT,
     pregnancy_due_date DATE,
     delivery_date DATE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_patients_user (user_id)
+);
 
--- 3. therapists table (Therapist-specific information)
+-- 3. therapists table (Therapist-specific information) - MODIFIED
 CREATE TABLE therapists (
-    therapist_id INT PRIMARY KEY,
-    user_id INT NOT NULL,
+    therapist_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
     specialization VARCHAR(255) NOT NULL,
     qualifications TEXT NOT NULL,
     license_number VARCHAR(100) NOT NULL,
@@ -64,8 +67,52 @@ CREATE TABLE therapists (
     is_verified BOOLEAN DEFAULT FALSE,
     verification_documents TEXT,
     verification_notes TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_therapists_user (user_id)
+);
+
+-- Triggers to automatically create patient/therapist records
+DELIMITER //
+
+CREATE TRIGGER after_user_insert_patient
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    IF NEW.role = 'patient' THEN
+        INSERT INTO patients (user_id)
+        VALUES (NEW.user_id);
+    END IF;
+END//
+
+CREATE TRIGGER after_user_insert_therapist
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    IF NEW.role = 'therapist' THEN
+        INSERT INTO therapists (user_id, specialization, qualifications, license_number, hourly_rate)
+        VALUES (NEW.user_id, 'General Therapy', 'Pending qualifications', 'TEMP-LICENSE', 0.00);
+    END IF;
+END//
+
+CREATE TRIGGER before_user_update_role
+BEFORE UPDATE ON users
+FOR EACH ROW
+BEGIN
+    -- Prevent role changes if corresponding records exist
+    IF NEW.role <> OLD.role THEN
+        IF OLD.role = 'patient' AND EXISTS (SELECT 1 FROM patients WHERE user_id = OLD.user_id) THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Cannot change role from patient - patient record exists';
+        ELSEIF OLD.role = 'therapist' AND EXISTS (SELECT 1 FROM therapists WHERE user_id = OLD.user_id) THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Cannot change role from therapist - therapist record exists';
+        END IF;
+    END IF;
+END//
+
+DELIMITER ;
 
 -- 4. therapist_specializations table (Many-to-many for therapist specialties)
 CREATE TABLE therapist_specializations (
@@ -81,7 +128,7 @@ CREATE TABLE therapist_specializations (
     ) NOT NULL,
     FOREIGN KEY (therapist_id) REFERENCES therapists(therapist_id) ON DELETE CASCADE,
     INDEX idx_therapist_spec (therapist_id, specialization)
-) 
+); 
 
 -- 5. therapist_availability table (When therapists are available)
 CREATE TABLE therapist_availability (
@@ -96,7 +143,7 @@ CREATE TABLE therapist_availability (
     FOREIGN KEY (therapist_id) REFERENCES therapists(therapist_id) ON DELETE CASCADE,
     INDEX idx_availability_therapist (therapist_id),
     INDEX idx_availability_day (day_of_week)
-) 
+); 
 
 -- 6. appointments table (Scheduled sessions)
 CREATE TABLE appointments (
@@ -117,7 +164,7 @@ CREATE TABLE appointments (
     INDEX idx_appointments_therapist (therapist_id),
     INDEX idx_appointments_status (status),
     INDEX idx_appointments_time (scheduled_time)
-) 
+); 
 
 -- 7. payments table (Financial transactions)
 CREATE TABLE payments (
@@ -138,7 +185,7 @@ CREATE TABLE payments (
     FOREIGN KEY (therapist_id) REFERENCES therapists(therapist_id),
     INDEX idx_payments_appointment (appointment_id),
     INDEX idx_payments_status (status)
-) 
+);
 
 -- 8. reviews table (Patient feedback)
 CREATE TABLE reviews (
@@ -155,7 +202,7 @@ CREATE TABLE reviews (
     FOREIGN KEY (therapist_id) REFERENCES therapists(therapist_id),
     INDEX idx_reviews_therapist (therapist_id),
     INDEX idx_reviews_patient (patient_id)
-) 
+); 
 
 -- 9. messages table (In-app communication)
 CREATE TABLE messages (
@@ -172,7 +219,7 @@ CREATE TABLE messages (
     INDEX idx_messages_sender (sender_id),
     INDEX idx_messages_receiver (receiver_id),
     INDEX idx_messages_appointment (appointment_id)
-) 
+); 
 
 -- 10. patient_progress table (Tracking patient mental health)
 CREATE TABLE patient_progress (
@@ -188,7 +235,7 @@ CREATE TABLE patient_progress (
     FOREIGN KEY (therapist_id) REFERENCES therapists(therapist_id),
     INDEX idx_progress_patient (patient_id),
     INDEX idx_progress_date (recorded_date)
-) 
+); 
 
 -- 11. educational_resources table (Content library)
 CREATE TABLE educational_resources (
@@ -211,7 +258,7 @@ CREATE TABLE educational_resources (
     FOREIGN KEY (created_by) REFERENCES users(user_id),
     INDEX idx_resources_category (category),
     INDEX idx_resources_featured (is_featured)
-) 
+); 
 
 -- 12. patient_resource_access table (Track resource access)
 CREATE TABLE patient_resource_access (
@@ -224,7 +271,7 @@ CREATE TABLE patient_resource_access (
     FOREIGN KEY (resource_id) REFERENCES educational_resources(resource_id),
     INDEX idx_access_patient (patient_id),
     INDEX idx_access_resource (resource_id)
-) 
+);
 
 -- 13. emergency_resources table (Crisis support information)
 CREATE TABLE emergency_resources (
@@ -238,7 +285,7 @@ CREATE TABLE emergency_resources (
     is_international BOOLEAN DEFAULT FALSE,
     category ENUM('suicide_prevention', 'domestic_violence', 'medical_emergency', 'general_crisis'),
     INDEX idx_emergency_category (category)
-) 
+);
 
 -- 14. therapist_verification_logs table (Audit trail)
 CREATE TABLE therapist_verification_logs (
@@ -252,7 +299,7 @@ CREATE TABLE therapist_verification_logs (
     FOREIGN KEY (admin_id) REFERENCES users(user_id),
     INDEX idx_verification_therapist (therapist_id),
     INDEX idx_verification_admin (admin_id)
-) 
+); 
 
 -- 15. system_settings table (Platform configuration)
 CREATE TABLE system_settings (
@@ -265,5 +312,11 @@ CREATE TABLE system_settings (
     updated_by INT,
     FOREIGN KEY (updated_by) REFERENCES users(user_id),
     INDEX idx_settings_key (setting_key)
-) 
+);
+
+
+
+
+ALTER TABLE appointments DROP COLUMN scheduled_time;
+ALTER TABLE appointments ADD COLUMN scheduled_time DATETIME;
 

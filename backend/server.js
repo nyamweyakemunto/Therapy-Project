@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
+const bookingRoutes = require('./routes/bookingRoutes')
 const path = require('path');
 const morgan = require('morgan');
 
@@ -34,6 +35,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use(authRoutes);
+app.use(bookingRoutes);
 // Temporary test endpoint
 app.get('/test-cookie', (req, res) => {
   res.cookie('test', 'value', { sameSite: 'None', secure: false });

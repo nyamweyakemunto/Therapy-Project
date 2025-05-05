@@ -326,7 +326,6 @@ const styles = {
     padding: '20px',
     backgroundColor: '#f9f9f9',
     minHeight: '100vh',
-    marginLeft: '250px', // Adjust based on your sidebar width
   },
   header: {
     backgroundColor: '#4a6fa5',

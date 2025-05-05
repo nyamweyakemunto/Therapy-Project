@@ -96,13 +96,11 @@ return (
         {/* Patient routes */}
         
           <>
-            <Route path="/therapists" element={
-             <TherapistSearch/>
-              } />
+          mm<Route path="/patient" element={<PatientDashboard />} />
+            <Route path="/therapists" element={<TherapistSearch/>} />
             <Route path="/therapist/:id" element={<TherapistProfile />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
-            <Route path="/patient" element={<PatientDashboard />} />
             <Route path="/p-appointments" element={<Appointments />} />
             <Route path="/p-messages" element={<Messages />} />
             <Route path="/p-feedback" element={<Feedback />} />

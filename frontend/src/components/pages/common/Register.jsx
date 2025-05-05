@@ -7,7 +7,8 @@ const Register = ({ buttonClasses, buttonForGFT }) => {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,7 +77,8 @@ const Register = ({ buttonClasses, buttonForGFT }) => {
           last_name: formData.last_name,
           email: formData.email,
           phone: formData.phone,
-          password: formData.password
+          password: formData.password,
+          role: formData.role
         })
       });
       
@@ -193,6 +195,25 @@ const Register = ({ buttonClasses, buttonForGFT }) => {
                 required
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+            </div>
+
+            {/* Phone Input */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className={`bg-[#d5f2ec] border ${errors.role ? 'border-red-500' : 'border-gray-300'} text-gray-900 sm:text-sm rounded-lg focus:ring-brightColor focus:border-brightColor block w-full pl-10 p-3 transition-all duration-200 shadow-sm`}
+                placeholder=" Role"
+                required
+              />
+              {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
             </div>
 
             {/* Password Input */}
