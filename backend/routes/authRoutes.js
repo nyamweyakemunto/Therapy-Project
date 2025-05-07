@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, checkAuthStatus, logout } = require('../controllers/authController');
+const { register, login, checkAuthStatus, logout, checkAuth } = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/authMiddleware.js');
 const db = require('../config/db.js');
 const sendEmail = require('../config/emailService.js');
@@ -18,6 +18,7 @@ router.get('/user', authMiddleware(), (req, res) => {
       });
 });
 
+router.get('/auth/check', checkAuth);
 
 router.post('/api/approve-user/:user_id', (req, res) => {
     const userId = req.params.user_id;

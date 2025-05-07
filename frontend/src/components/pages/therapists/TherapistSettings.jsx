@@ -1,16 +1,21 @@
 import React, { useState, useRef } from 'react';
+import { useContext } from 'react';
 import SideBar from '../../TherapistSideBar';
 import { FiCamera, FiTrash2, FiEye, FiEyeOff, FiLogOut, FiLock } from 'react-icons/fi';
+import { AuthContext } from '../../../context/AuthContext';
+
 
 const TherapistSettings = () => {
-  // State for form fields
+    const { user } = useContext(AuthContext);
+  
+  // State for form fields initialized with user data
   const [profile, setProfile] = useState({
-    name: 'Dr. Sarah Johnson',
-    email: 'sarah.johnson@therapyclinic.com',
-    phone: '(555) 123-4567',
-    specialization: 'Cognitive Behavioral Therapy',
-    licenseNumber: 'LCSW-123456',
-    bio: 'Licensed therapist with 10 years of experience specializing in anxiety and depression.',
+    name: user ? `Dr. ${user.first_name} ${user.last_name}` : 'Dr. Sarah Johnson',
+    email: user ? user.email : 'sarah.johnson@therapyclinic.com',
+    phone: user?.phone || '(555) 123-4567', // Assuming phone might be in user data
+    specialization: user?.specialization || null, // Not in current user data
+    licenseNumber: user?.license_number || null, // Not in current user data
+    bio: user?.bio || null, // Not in current user data
     profilePicture: null,
     availability: {
       monday: true,

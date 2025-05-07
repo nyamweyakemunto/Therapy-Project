@@ -1,9 +1,13 @@
-import React from 'react';
-import SideBar from '../../PatientSideBar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiStar, FiClock, FiMapPin, FiDollarSign, FiCheckCircle } from 'react-icons/fi';
+import { FiStar, FiClock, FiMapPin, FiDollarSign, FiCheckCircle, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import SideBar from '../../PatientSideBar';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3500/api',
+});
 
 const TherapistProfile = () => {
   const { id } = useParams();
@@ -11,53 +15,18 @@ const TherapistProfile = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedAvailability, setSelectedAvailability] = useState(null);
-
-  // Sample therapist data with fixed duplicate reviews property
-  const therapist = {
-    id: 1,
-    name: "Dr. Emily Johnson",
-    specialization: "Postpartum Depression Specialist",
-    bio: "Licensed clinical psychologist with 10+ years of experience helping mothers navigate mental health challenges...",
-    credentials: [
-      "PhD in Clinical Psychology (UCLA)",
-      "Certified in Perinatal Mental Health (PSI)",
-      "Licensed in California (PSY29861)"
-    ],
-    approach: "I use an integrative approach combining Cognitive Behavioral Therapy (CBT)...",
-    rating: 4.8,
-    reviewCount: 127, // Changed from 'reviews' to 'reviewCount'
-    sessionFee: 85,
-    photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80",
-    languages: ["English", "Spanish"],
-    availability: {
-      monday: ["9:00 AM", "2:00 PM"],
-      wednesday: ["10:00 AM", "3:00 PM"],
-      friday: ["11:00 AM", "4:00 PM"]
-    },
-    reviews: [ // This is now the only reviews property (array of review objects)
-      {
-        id: 1,
-        patient: "Sarah M.",
-        rating: 5,
-        date: "2023-06-15",
-        comment: "Dr. Johnson helped me through severe postpartum anxiety...",
-        avatar: "https://randomuser.me/api/portraits/women/43.jpg"
-      },
-      {
-        id: 2,
-        patient: "Jessica T.",
-        rating: 4,
-        date: "2023-05-22",
-        comment: "Very professional and caring...",
-        avatar: "https://randomuser.me/api/portraits/women/68.jpg"
-      }
-    ],
-    stats: {
-      yearsExperience: 12,
-      patientsHelped: 450,
-      satisfactionRate: 98
-    }
-  };
+  const [therapist, setTherapist] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [bookingData, setBookingData] = useState({
+    appointmentDate: '',
+    appointmentTime: '',
+    notes: '',
+    therapyType: ''
+  });
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   // Animation variants
   const fadeIn = {
@@ -68,6 +37,134 @@ const TherapistProfile = () => {
   const slideUp = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.4 } }
+  };
+
+  useEffect(() => {
+    const fetchTherapist = async () => {
+      try {
+        const response = await api.get(`/therapists/${id}`);
+        const therapistData = response.data;
+        
+        // Transform the data to match our UI structure
+        const transformedTherapist = {
+          ...therapistData,
+          name: `Dr. ${therapistData.first_name} ${therapistData.last_name}`,
+          specialization: therapistData.specializations?.join(', ') || 'Mental Health Specialist',
+          photo: therapistData.profile_picture_url || `https://randomuser.me/api/portraits/${therapistData.gender === 'male' ? 'men' : 'women'}/${Math.floor(Math.random() * 100)}.jpg`,
+          reviewCount: therapistData.reviews_count || 0,
+          sessionFee: therapistData.hourly_rate || 85,
+          stats: {
+            yearsExperience: therapistData.years_of_experience || 5,
+            patientsHelped: 450, // This would come from backend in a real app
+            satisfactionRate: 98  // This would come from backend in a real app
+          },
+          availability: {
+            monday: ["9:00 AM", "2:00 PM"],
+            wednesday: ["10:00 AM", "3:00 PM"],
+            friday: ["11:00 AM", "4:00 PM"]
+          },
+          reviews: [
+            {
+              id: 1,
+              patient: "Sarah M.",
+              rating: 5,
+              date: "2023-06-15",
+              comment: "Dr. Johnson helped me through severe postpartum anxiety...",
+              avatar: "https://randomuser.me/api/portraits/women/43.jpg"
+            },
+            {
+              id: 2,
+              patient: "Jessica T.",
+              rating: 4,
+              date: "2023-05-22",
+              comment: "Very professional and caring...",
+              avatar: "https://randomuser.me/api/portraits/women/68.jpg"
+            }
+          ],
+          credentials: [
+            "PhD in Clinical Psychology",
+            "Certified in Perinatal Mental Health",
+            `Licensed in ${therapistData.license_state || 'California'}`
+          ],
+          approach: therapistData.bio || "I use an integrative approach combining Cognitive Behavioral Therapy (CBT)..."
+        };
+        
+        setTherapist(transformedTherapist);
+      } catch (err) {
+        setError(err.response?.data?.error || 'Failed to load therapist');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTherapist();
+  }, [id]);
+
+  useEffect(() => {
+    if (bookingData.appointmentDate && therapist) {
+      const fetchAvailability = async () => {
+        try {
+          setLoadingSlots(true);
+          const response = await api.get(
+            `/therapists/${id}/availability`,
+            { params: { date: bookingData.appointmentDate } }
+          );
+          setAvailableSlots(response.data.available_slots || []);
+        } catch (err) {
+          console.error('Availability Error:', err);
+          setAvailableSlots([]);
+        } finally {
+          setLoadingSlots(false);
+        }
+      };
+
+      fetchAvailability();
+    }
+  }, [bookingData.appointmentDate, id, therapist]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setBookingData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      await api.post('/appointments', {
+        patient_id: 1, // In a real app, get from auth context
+        therapist_id: id,
+        date: bookingData.appointmentDate,
+        time: bookingData.appointmentTime,
+        duration_minutes: 60,
+        notes: bookingData.notes,
+        therapy_type: bookingData.therapyType
+      });
+      
+      setBookingSuccess(true);
+      setTimeout(() => {
+        setBookingSuccess(false);
+        setShowBookingModal(false);
+        setBookingData({
+          appointmentDate: '',
+          appointmentTime: '',
+          notes: '',
+          therapyType: ''
+        });
+      }, 3000);
+      
+    } catch (err) {
+      console.error('Booking Error:', err);
+      alert(err.response?.data?.error || 'Booking failed. Please try again.');
+    }
+  };
+
+  const formatTimeDisplay = (time) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
   };
 
   // Availability Calendar Component
@@ -156,6 +253,38 @@ const TherapistProfile = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <SideBar>
+        <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 p-6 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+            <p className="text-lg text-purple-800 mt-4">Loading therapist profile...</p>
+          </div>
+        </div>
+      </SideBar>
+    );
+  }
+
+  if (error || !therapist) {
+    return (
+      <SideBar>
+        <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 p-6 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md">
+            <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
+            <p className="text-gray-700 mb-4">{error || 'Therapist not found'}</p>
+            <Link 
+              to="/therapists"
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors inline-block"
+            >
+              Back to Therapists
+            </Link>
+          </div>
+        </div>
+      </SideBar>
+    );
+  }
+
   return (
     <SideBar>
       <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50">
@@ -224,7 +353,7 @@ const TherapistProfile = () => {
                     <FiCheckCircle className="mr-1" />
                     Verified Professional
                   </span>
-                  {therapist.languages.map(lang => (
+                  {therapist.languages?.map(lang => (
                     <span key={lang} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       {lang}
                     </span>
@@ -291,7 +420,7 @@ const TherapistProfile = () => {
                 >
                   {activeTab === 'about' && (
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-900 mb-3">About Dr. Johnson</h2>
+                      <h2 className="text-lg font-semibold text-gray-900 mb-3">About {therapist.name.split(' ')[0]}</h2>
                       <p className="text-gray-700 mb-6">{therapist.bio}</p>
                       
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">Credentials</h3>
@@ -332,10 +461,12 @@ const TherapistProfile = () => {
                             Focus Areas
                           </h3>
                           <ul className="space-y-2">
-                            {['Postpartum Depression', 'Pregnancy Anxiety', 'Birth Trauma', 'Transition to Motherhood'].map((item, i) => (
+                            {therapist.specializations?.map((spec, i) => (
                               <li key={i} className="flex items-center">
                                 <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
-                                <span className="text-gray-700">{item}</span>
+                                <span className="text-gray-700">
+                                  {spec.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -434,95 +565,141 @@ const TherapistProfile = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="bg-indigo-600 p-4 text-white">
-                  <h3 className="text-lg font-medium">Book a Session</h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Book a Session</h3>
+                    <button onClick={() => setShowBookingModal(false)} className="text-white hover:text-indigo-100">
+                      <FiX className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="p-6">
-                  <div className="flex items-start mb-6">
-                    <img 
-                      src={therapist.photo} 
-                      alt={therapist.name}
-                      className="w-16 h-16 rounded-lg object-cover mr-4"
-                    />
-                    <div>
-                      <h4 className="font-medium">{therapist.name}</h4>
-                      <p className="text-indigo-600 text-sm">{therapist.specialization}</p>
-                      <p className="text-gray-700 font-medium mt-1">${therapist.sessionFee} per session</p>
+                  {bookingSuccess ? (
+                    <div className="text-center py-8">
+                      <svg className="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <h3 className="mt-4 text-lg font-medium text-gray-900">Booking Confirmed!</h3>
+                      <p className="mt-2 text-gray-600">Your appointment has been successfully scheduled.</p>
+                      <button
+                        onClick={() => setShowBookingModal(false)}
+                        className="mt-6 bg-indigo-600 text-white font-medium py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        Close
+                      </button>
                     </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Session Type</label>
-                      <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                        <option>Video Session (50 min)</option>
-                        <option>Phone Session (50 min)</option>
-                        <option>In-Person (Los Angeles office)</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
-                      <div className="bg-gray-50 p-3 rounded-md">
-                        {selectedAvailability ? (
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{selectedAvailability.day}</p>
-                              <p className="text-sm text-gray-600">at {selectedAvailability.time}</p>
-                            </div>
-                            <button 
-                              onClick={() => setSelectedAvailability(null)}
-                              className="text-indigo-600 hover:text-indigo-800 text-sm"
-                            >
-                              Change
-                            </button>
-                          </div>
-                        ) : (
-                          <button 
-                            onClick={() => {
-                              setShowBookingModal(false);
-                              setActiveTab('availability');
-                            }}
-                            className="w-full text-left text-indigo-600 hover:text-indigo-800"
+                  ) : (
+                    <form onSubmit={handleSubmit}>
+                      <div className="flex items-start mb-6">
+                        <img 
+                          src={therapist.photo} 
+                          alt={therapist.name}
+                          className="w-16 h-16 rounded-lg object-cover mr-4"
+                        />
+                        <div>
+                          <h4 className="font-medium">{therapist.name}</h4>
+                          <p className="text-indigo-600 text-sm">{therapist.specialization}</p>
+                          <p className="text-gray-700 font-medium mt-1">${therapist.sessionFee} per session</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Session Type</label>
+                          <select
+                            name="therapyType"
+                            value={bookingData.therapyType}
+                            onChange={handleInputChange}
+                            required
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                           >
-                            Select availability
-                          </button>
-                        )}
+                            <option value="">Select session type</option>
+                            <option value="video">Video Session (50 min)</option>
+                            <option value="phone">Phone Session (50 min)</option>
+                            <option value="in_person">In-Person (Office)</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                          <input
+                            type="date"
+                            name="appointmentDate"
+                            value={bookingData.appointmentDate}
+                            onChange={handleInputChange}
+                            required
+                            min={new Date().toISOString().split('T')[0]}
+                            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                          {loadingSlots ? (
+                            <div className="flex items-center text-sm text-gray-500">
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Loading available times...
+                            </div>
+                          ) : availableSlots.length > 0 ? (
+                            <select
+                              name="appointmentTime"
+                              value={bookingData.appointmentTime}
+                              onChange={handleInputChange}
+                              required
+                              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                            >
+                              <option value="">Select a time</option>
+                              {availableSlots.map((slot, index) => (
+                                <option key={index} value={slot}>
+                                  {formatTimeDisplay(slot)}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="text-sm text-gray-500">
+                              {bookingData.appointmentDate 
+                                ? 'No available slots for this date' 
+                                : 'Select a date first'}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                          <textarea
+                            name="notes"
+                            rows="3"
+                            value={bookingData.notes}
+                            onChange={handleInputChange}
+                            className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            placeholder="Any specific concerns or preferences..."
+                          ></textarea>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-                      <div className="space-y-2">
-                        <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
-                          <input type="radio" name="payment" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500" defaultChecked />
-                          <span className="ml-3 block text-sm font-medium text-gray-700">
-                            Credit/Debit Card
-                          </span>
-                        </label>
-                        <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
-                          <input type="radio" name="payment" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500" />
-                          <span className="ml-3 block text-sm font-medium text-gray-700">
-                            Insurance (verify coverage)
-                          </span>
-                        </label>
+                      
+                      <div className="mt-6 flex space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowBookingModal(false)}
+                          className="flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={!bookingData.appointmentTime || loadingSlots}
+                          className={`flex-1 bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                            (!bookingData.appointmentTime || loadingSlots) ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          Confirm Booking
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 flex space-x-3">
-                    <button
-                      onClick={() => setShowBookingModal(false)}
-                      className="flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="flex-1 bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Confirm Booking
-                    </button>
-                  </div>
+                    </form>
+                  )}
                 </div>
               </motion.div>
             </motion.div>

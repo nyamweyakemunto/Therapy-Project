@@ -12,9 +12,6 @@ const SideBar = ({children}) => {
         <Link to="/therapists" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Therapist Search
         </Link>
-        <Link to="/booking" className="py-2 px-3 hover:bg-blue-700 rounded transition">
-          Booking Page
-        </Link>
         <Link to="/confirmation" className="py-2 px-3 hover:bg-blue-700 rounded transition">
           Confirmation Page
         </Link>

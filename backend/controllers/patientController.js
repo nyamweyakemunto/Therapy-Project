@@ -54,59 +54,79 @@ exports.getTherapists = async (req, res) => {
     }
   }
 
-// exports.therapistAvailability = async (req, res) => {
-//     try {
-//       const { id } = req.params;
-//       const { date } = req.query;
+exports.getTherapistById = async (req, res) => {
+    try {
+      const { id } = req.params;
       
-//       if (!date) {
-//         return res.status(400).json({ error: 'Date parameter is required' });
-//       }
+      const [therapists] = await pool.query(`
+        SELECT 
+          t.*, 
+          u.first_name, 
+          u.last_name, 
+          u.profile_picture_url, 
+          u.gender,
+          (
+            SELECT JSON_ARRAYAGG(specialization)
+            FROM therapist_specializations ts
+            WHERE ts.therapist_id = t.therapist_id
+          ) AS specializations
+        FROM therapists t
+        JOIN users u ON t.user_id = u.user_id
+        WHERE t.therapist_id = ? AND u.is_active = TRUE AND t.is_verified = TRUE
+      `, [id]);
   
-//       // Check therapist's recurring availability
-//       const [availability] = await pool.query(`
-//         SELECT start_time, end_time 
-//         FROM therapist_availability 
-//         WHERE therapist_id = ? AND is_recurring = TRUE
-//           AND day_of_week = DAYOFWEEK(?)
-//       `, [id, date]);
+      if (therapists.length === 0) {
+        return res.status(404).json({ error: 'Therapist not found' });
+      }
   
-//       if (availability.length === 0) {
-//         return res.json([]);
-//       }
-  
-//       // Check already booked appointments
-//       const [bookings] = await pool.query(`
-//         SELECT TIME(scheduled_time) as time 
-//         FROM appointments 
-//         WHERE therapist_id = ? 
-//           AND DATE(scheduled_time) = ?
-//           AND status IN ('scheduled', 'rescheduled')
-//       `, [id, date]);
-  
-//       const bookedTimes = bookings.map(b => b.time.substring(0, 5)); // Format as HH:MM
-  
-//       // Generate available slots (every 60 minutes)
-//       const availableSlots = [];
-//       const { start_time, end_time } = availability[0];
+      const therapist = therapists[0];
       
-//       let current = new Date(`${date}T${start_time}`);
-//       const end = new Date(`${date}T${end_time}`);
+      // Handle languages - check if it's already parsed or needs parsing
+      if (typeof therapist.languages === 'string') {
+        try {
+          therapist.languages = JSON.parse(therapist.languages);
+        } catch (e) {
+          // If parsing fails, check if it's a string representation
+          if (therapist.languages.startsWith('[') && therapist.languages.endsWith(']')) {
+            therapist.languages = JSON.parse(therapist.languages);
+          } else {
+            // Handle as comma-separated string if needed
+            therapist.languages = therapist.languages.split(',').map(lang => lang.trim());
+          }
+        }
+      } else if (Array.isArray(therapist.languages)) {
+        // Already in array format
+      } else {
+        therapist.languages = ['English']; // Default
+      }
   
-//       while (current < end) {
-//         const timeStr = current.toTimeString().substring(0, 5);
-//         if (!bookedTimes.includes(timeStr)) {
-//           availableSlots.push(timeStr);
-//         }
-//         current.setHours(current.getHours() + 1);
-//       }
+      // Handle specializations
+      if (therapist.specializations && typeof therapist.specializations === 'string') {
+        try {
+          therapist.specializations = JSON.parse(therapist.specializations);
+        } catch (e) {
+          therapist.specializations = [];
+        }
+      } else if (!Array.isArray(therapist.specializations)) {
+        therapist.specializations = [];
+      }
   
-//       res.json(availableSlots);
-//     } catch (error) {
-//       console.error('Error fetching availability:', error);
-//       res.status(500).json({ error: 'Failed to fetch availability' });
-//     }
-//   }
+      // Get availability
+      const [availability] = await pool.query(`
+        SELECT DAYNAME(DATE_ADD('2023-01-02', INTERVAL day_of_week-2 DAY)) as day_name, 
+               start_time, end_time 
+        FROM therapist_availability 
+        WHERE therapist_id = ? AND is_recurring = TRUE
+      `, [id]);
+      therapist.availability = availability;
+  
+      res.json(therapist);
+    } catch (error) {
+      console.error('Error fetching therapist:', error);
+      res.status(500).json({ error: 'Failed to fetch therapist' });
+    }
+  };
+  
 exports.therapistAvailability = async (req, res) => {
     try {
         const { id } = req.params;

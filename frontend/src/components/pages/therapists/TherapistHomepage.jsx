@@ -1,10 +1,18 @@
 import React from 'react';
+import { useContext } from 'react';
 import SideBar from '../../TherapistSideBar';
 import { FiCalendar, FiUsers, FiClock, FiDollarSign, FiMessageSquare, FiPieChart, FiActivity } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AuthContext } from '../../../context/AuthContext';
+
+
 
 const TherapistHomepage = () => {
+  const { user } = useContext(AuthContext);
+  const therapistName = user ? `Dr. ${user.first_name} ${user.last_name}` : 'Dr. Smith';
+  // Get therapist name from user data
+
   // Enhanced sample data
   const stats = {
     totalClients: 42,
@@ -57,7 +65,7 @@ const TherapistHomepage = () => {
           className="flex justify-between items-center mb-8"
         >
           <div>
-            <h1 className="text-3xl font-bold text-indigo-900">Welcome Back, Dr. Smith</h1>
+            <h1 className="text-3xl font-bold text-indigo-900">Welcome Back,{therapistName}</h1>
             <p className="text-indigo-600">Here's what's happening with your practice today</p>
           </div>
           <div className="relative">

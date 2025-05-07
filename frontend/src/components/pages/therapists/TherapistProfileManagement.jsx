@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SideBar from '../../TherapistSideBar';
 import { FiUser, FiLock, FiMail, FiPhone, FiMapPin, FiBriefcase, FiAward, FiCalendar, FiUpload } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,29 +8,115 @@ const TherapistProfileManagement = () => {
   const [activeTab, setActiveTab] = useState('personal');
   const [editMode, setEditMode] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: 'Dr. Sarah Johnson',
-    specialization: 'Clinical Psychologist',
-    email: 'sarah.johnson@therapyclinic.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Healing Lane, Suite 405, Boston, MA 02115',
-    bio: 'Licensed therapist specializing in cognitive behavioral therapy with 8 years of experience helping clients overcome anxiety and depression.',
-    credentials: [
-      'PhD in Clinical Psychology - Harvard University (2015)',
-      'Licensed in Massachusetts (PSY12345)',
-      'Certified CBT Practitioner'
-    ],
-    availability: ['Mon: 9am-5pm', 'Wed: 10am-6pm', 'Fri: 8am-4pm'],
-    profileCompletion: 85
+    name: '',
+    specialization: '',
+    email: '',
+    phone: '',
+    address: '',
+    bio: '',
+    profilePicture: null,
+    credentials: [],
+    treatmentMethods: [],
+    languages: [{ language: 'English', proficiency: 'fluent' }],
+    availability: [],
+    focusAreas: [],
+    profileCompletion: 0
   });
 
+  // Parse JSON fields from database
+  const parseJsonField = (field) => {
+    try {
+      return field ? JSON.parse(field) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('/api/therapist/profile', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setProfileData({
+            name: data.name,
+            specialization: data.specialization,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            bio: data.bio,
+            profilePicture: data.profile_picture_url,
+            credentials: parseJsonField(data.credentials),
+            treatmentMethods: parseJsonField(data.treatment_methods),
+            languages: parseJsonField(data.languages),
+            availability: data.availability || [],
+            focusAreas: data.specializations || [],
+            profileCompletion: calculateProfileCompletion(data)
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Calculate profile completion percentage
+  const calculateProfileCompletion = (profile) => {
+    const requiredFields = [
+      'name', 'specialization', 'email', 'phone', 'bio', 
+      'credentials', 'treatmentMethods', 'languages', 'availability'
+    ];
+    const completedFields = requiredFields.filter(field => {
+      if (Array.isArray(profile[field])) {
+        return profile[field].length > 0;
+      }
+      return !!profile[field];
+    }).length;
+    return Math.round((completedFields / requiredFields.length) * 100);
+  };
+
+  // Handle saving profile data
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/therapist/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          phone: profileData.phone,
+          address: profileData.address,
+          bio: profileData.bio,
+          profile_picture_url: profileData.profilePicture,
+          credentials: JSON.stringify(profileData.credentials),
+          treatment_methods: JSON.stringify(profileData.treatmentMethods),
+          languages: JSON.stringify(profileData.languages),
+          specializations: profileData.focusAreas,
+          availability: profileData.availability
+        })
+      });
+      
+      if (response.ok) {
+        setEditMode(false);
+        const updatedData = await response.json();
+        setProfileData(prev => ({
+          ...prev,
+          profileCompletion: calculateProfileCompletion(updatedData)
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+    }
+  };
+  
+  
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfileData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = () => {
-    setEditMode(false);
-    // Here you would typically send data to your backend
   };
 
   return (

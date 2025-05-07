@@ -29,6 +29,7 @@ CREATE TABLE users (
     INDEX idx_users_role (role)
 );
 
+ alter table users add column profile_picture_url varchar(255);
 -- 2. patients table (Patient-specific information) - MODIFIED
 CREATE TABLE patients (
     patient_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,8 +57,10 @@ CREATE TABLE patients (
 CREATE TABLE therapists (
     therapist_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
-    specialization VARCHAR(255) NOT NULL,
     qualifications TEXT NOT NULL,
+    languages VARCHAR(255) DEFAULT 'English',
+    rating DECIMAL(2,1) DEFAULT 0.0,
+    reviews_count INT DEFAULT 0,
     license_number VARCHAR(100) NOT NULL,
     license_state VARCHAR(100),
     license_expiry DATE,
@@ -72,6 +75,15 @@ CREATE TABLE therapists (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     INDEX idx_therapists_user (user_id)
 );
+
+-- Add columns to therapists table to accommodate all profile data
+ALTER TABLE therapists
+ADD COLUMN phone VARCHAR(20),
+ADD COLUMN address TEXT,
+ADD COLUMN profile_picture_url VARCHAR(255),
+ADD COLUMN treatment_methods TEXT COMMENT 'JSON array of treatment methods',
+ADD COLUMN credentials TEXT COMMENT 'JSON array of qualifications/credentials',
+ADD COLUMN languages TEXT COMMENT 'JSON array of languages with proficiency';
 
 -- Triggers to automatically create patient/therapist records
 DELIMITER //
@@ -118,14 +130,7 @@ DELIMITER ;
 CREATE TABLE therapist_specializations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     therapist_id INT NOT NULL,
-    specialization ENUM(
-        'postpartum_depression', 
-        'prenatal_anxiety',
-        'birth_trauma',
-        'parenting_stress',
-        'relationship_issues',
-        'general_counseling'
-    ) NOT NULL,
+    specialization ENUM('postpartum_depression','pregnancy_anxiety','birth_trauma''infertility','parenting_support','general_counseling') NOT NULL,
     FOREIGN KEY (therapist_id) REFERENCES therapists(therapist_id) ON DELETE CASCADE,
     INDEX idx_therapist_spec (therapist_id, specialization)
 ); 

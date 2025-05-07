@@ -4,7 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
-const bookingRoutes = require('./routes/bookingRoutes')
+const patientRoutes = require('./routes/patientRoutes')
 const path = require('path');
 const morgan = require('morgan');
 
@@ -35,29 +35,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use(authRoutes);
-app.use(bookingRoutes);
-// Temporary test endpoint
-app.get('/test-cookie', (req, res) => {
-  res.cookie('test', 'value', { sameSite: 'None', secure: false });
-  res.send('Cookie set');
-});
-
-app.get('/verify-cookie', (req, res) => {
-  // Set test cookie with same config as auth cookie
-  res.cookie('verify_test', 'works', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'development' ? 'Lax' : 'None',
-      domain: process.env.NODE_ENV === 'development' ? 'localhost' : '.yourdomain.com'
-  });
-  
-  // Return all cookies received
-  res.json({
-      receivedCookies: req.cookies,
-      headers: req.headers,
-      env: process.env.NODE_ENV
-  });
-});
+app.use(patientRoutes);
 
 const port = process.env.PORT || 3500;
 

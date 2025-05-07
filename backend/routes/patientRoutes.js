@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 const express = require('express');
 const db = require('../config/db.js');
-const {getTherapists, therapistAvailability, appointments}= require('../controllers/bookingController.js')
+const {getTherapists, therapistAvailability, appointments, getTherapistById}= require('../controllers/patientController.js')
 
 const router = express.Router();
 
@@ -25,5 +25,8 @@ router.get('/api/therapists', getTherapists);
   
   // Book an appointment
   router.post('/api/appointments', appointments);
+
+  // Add this to your router
+router.get('/api/therapists/:id', getTherapistById);
 
   module.exports = router;

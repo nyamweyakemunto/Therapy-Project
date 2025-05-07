@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../../../context/AuthContext';
 
 const Login = ({ buttonClasses, buttonForGFT }) => {
+  const { login } = useContext(AuthContext);
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -122,18 +126,7 @@ const Login = ({ buttonClasses, buttonForGFT }) => {
     setIsSubmitting(true);
   
     try {
-      const response = await fetch('http://localhost:3500/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(formData)
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) throw new Error(data.message || 'Login failed');
-  
-      // Use the user data returned from login response
+      const data = await login(formData);
       const userRole = data.user.role;
       
       // Redirect based on actual role
@@ -150,7 +143,6 @@ const Login = ({ buttonClasses, buttonForGFT }) => {
         default:
           window.location.href = '/';
       }
-  
     } catch (error) {
       setErrors({ submit: error.message });
     } finally {

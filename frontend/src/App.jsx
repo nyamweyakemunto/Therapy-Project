@@ -10,7 +10,6 @@ import PageLayout from './components/pages/common/PageLayout'
 import PatientHomepage from './components/pages/patients/PatientHomepage';
 import TherapistSearch from './components/pages/patients/TherapistSearch';
 import TherapistProfile from './components/pages/patients/TherapistProfile';
-import BookingPage from './components/pages/patients/BookingPage';
 import ConfirmationPage from './components/pages/patients/ConfirmationPage';
 import PatientDashboard from './components/pages/patients/PatientDashboard';
 import Appointments from './components/pages/patients/Appointments';
@@ -99,7 +98,6 @@ return (
           mm<Route path="/patient" element={<PatientDashboard />} />
             <Route path="/therapists" element={<TherapistSearch/>} />
             <Route path="/therapist/:id" element={<TherapistProfile />} />
-            <Route path="/booking" element={<BookingPage />} />
             <Route path="/confirmation" element={<ConfirmationPage />} />
             <Route path="/p-appointments" element={<Appointments />} />
             <Route path="/p-messages" element={<Messages />} />
