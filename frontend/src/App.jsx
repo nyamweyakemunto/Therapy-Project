@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
-import { useEffect, useState } from 'react';
+import { useContext } from 'react';
+import { AuthContext } from './context/AuthContext';
 
 import PageLayout from './components/pages/common/PageLayout'
 
@@ -10,6 +9,7 @@ import PageLayout from './components/pages/common/PageLayout'
 import PatientHomepage from './components/pages/patients/PatientHomepage';
 import TherapistSearch from './components/pages/patients/TherapistSearch';
 import TherapistProfile from './components/pages/patients/TherapistProfile';
+import TherapistProfileTest from './components/pages/patients/TherapistProfileTest';
 import ConfirmationPage from './components/pages/patients/ConfirmationPage';
 import PatientDashboard from './components/pages/patients/PatientDashboard';
 import Appointments from './components/pages/patients/Appointments';
@@ -41,107 +41,81 @@ import TherapistSessionNotes from './components/pages/therapists/TherapistSessio
 // const user = { role: 'patient' };
 
 function App() {
-  const [auth, setAuth] = useState({
-    role: null,
-    isLoading: true,
-    isAuthenticated: false
-  });
+  const { user, loading } = useContext(AuthContext);
 
-  // Consolidated auth check function
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('http://localhost:3500/user', {
-        credentials: 'include' // Important!
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setAuth({
-          role: data.user.role,
-          isLoading: false,
-          isAuthenticated: true
-        });
-      } else {
-        setAuth({
-          role: null,
-          isLoading: false,
-          isAuthenticated: false
-        });
-      }
-    } catch (error) {
-      setAuth({
-        role: null,
-        isLoading: false,
-        isAuthenticated: false
-      });
+  // Create a protected route component
+  const ProtectedRoute = ({ element, requiredRole }) => {
+    // If still loading, show loading indicator
+    if (loading) {
+      return <div className="flex items-center justify-center h-screen">Loading...</div>;
     }
-  };
-  useEffect(() => {
-    checkAuth();
-  }, []);
 
-  if (auth.isLoading) {
-    return <div>Loading...</div>;
+    // If not authenticated, redirect to login
+    if (!user) {
+      return <Navigate to="/login" />;
+    }
+
+    // If role is required and user doesn't have it, redirect to appropriate dashboard
+    if (requiredRole && user.role !== requiredRole) {
+      return <Navigate to="/" />;
+    }
+
+    // Otherwise, render the protected component
+    return element;
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
 return (
     <Router>
-        <Routes>
-
-        {/* Public route */}
-        <Route path="/login" element={ !auth.isAuthenticated ? <PageLayout /> : <Navigate to="/" />} />
-        <Route path="/register" element={ <PageLayout /> } />
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={!user ? <PageLayout /> : <Navigate to="/" />} />
+        <Route path="/register" element={<PageLayout />} />
 
         {/* Patient routes */}
-        
-          <>
-          mm<Route path="/patient" element={<PatientDashboard />} />
-            <Route path="/therapists" element={<TherapistSearch/>} />
-            <Route path="/therapist/:id" element={<TherapistProfile />} />
-            <Route path="/confirmation" element={<ConfirmationPage />} />
-            <Route path="/p-appointments" element={<Appointments />} />
-            <Route path="/p-messages" element={<Messages />} />
-            <Route path="/p-feedback" element={<Feedback />} />
-            <Route path="/payment-history" element={<PaymentHistory />} />
-            <Route path="/p-settings" element={<PatientSettings />} />  
-            <Route path="/emergency" element={<PatientEmergency />} />    
-            <Route path="/education" element={<PatientEducation />} />    
-            <Route path="/payment-methods" element={<PatientPaymentMethods />} />    
-            <Route path="/progress" element={<PatientProgressTracker />} />    
-          </>
-        
+        <Route path="/patient" element={<ProtectedRoute element={<PatientDashboard />} requiredRole="patient" />} />
+        <Route path="/therapists" element={<ProtectedRoute element={<TherapistSearch />} requiredRole="patient" />} />
+        <Route path="/therapist/:id" element={<ProtectedRoute element={<TherapistProfile />} requiredRole="patient" />} />
+        <Route path="/therapist-test/:id" element={<TherapistProfileTest />} />
+        <Route path="/confirmation" element={<ProtectedRoute element={<ConfirmationPage />} requiredRole="patient" />} />
+        <Route path="/p-appointments" element={<ProtectedRoute element={<Appointments />} requiredRole="patient" />} />
+        <Route path="/p-messages" element={<ProtectedRoute element={<Messages />} requiredRole="patient" />} />
+        <Route path="/p-feedback" element={<ProtectedRoute element={<Feedback />} requiredRole="patient" />} />
+        <Route path="/payment-history" element={<ProtectedRoute element={<PaymentHistory />} requiredRole="patient" />} />
+        <Route path="/p-settings" element={<ProtectedRoute element={<PatientSettings />} requiredRole="patient" />} />
+        <Route path="/emergency" element={<ProtectedRoute element={<PatientEmergency />} requiredRole="patient" />} />
+        <Route path="/education" element={<ProtectedRoute element={<PatientEducation />} requiredRole="patient" />} />
+        <Route path="/payment-methods" element={<ProtectedRoute element={<PatientPaymentMethods />} requiredRole="patient" />} />
+        <Route path="/progress" element={<ProtectedRoute element={<PatientProgressTracker />} requiredRole="patient" />} />
 
         {/* Therapist Routes */}
-        {/* {userRole === 'therapist' && ( */}
-          <>
-            <Route path="/therapist" element={<TherapistHomepage />} />
-            <Route path="/profile" element={<TherapistProfileManagement />} />
-            <Route path="/t-appointments" element={<TherapistAppointments />} />
-            <Route path="/t-messages" element={<TherapistMessages />} />
-            <Route path="/earnings" element={<TherapistEarnings />} />
-            <Route path="/t-settings" element={<TherapistSettings />} />
-            <Route path="/t-feedback" element={<TherapistFeedback />} />
-            <Route path="/Session-notes" element={<TherapistSessionNotes />} />
-            <Route path="/clients" element={<TherapistClientManagement />} />
-            <Route path="/resources" element={<TherapistResources />} />
-            <Route path="/availability" element={<TherapistAvailability />} />
-
-          </>
-        {/* )} */}
+        <Route path="/therapist" element={<ProtectedRoute element={<TherapistHomepage />} requiredRole="therapist" />} />
+        <Route path="/profile" element={<ProtectedRoute element={<TherapistProfileManagement />} requiredRole="therapist" />} />
+        <Route path="/t-appointments" element={<ProtectedRoute element={<TherapistAppointments />} requiredRole="therapist" />} />
+        <Route path="/t-messages" element={<ProtectedRoute element={<TherapistMessages />} requiredRole="therapist" />} />
+        <Route path="/earnings" element={<ProtectedRoute element={<TherapistEarnings />} requiredRole="therapist" />} />
+        <Route path="/t-settings" element={<ProtectedRoute element={<TherapistSettings />} requiredRole="therapist" />} />
+        <Route path="/t-feedback" element={<ProtectedRoute element={<TherapistFeedback />} requiredRole="therapist" />} />
+        <Route path="/session-notes" element={<ProtectedRoute element={<TherapistSessionNotes />} requiredRole="therapist" />} />
+        <Route path="/clients" element={<ProtectedRoute element={<TherapistClientManagement />} requiredRole="therapist" />} />
+        <Route path="/resources" element={<ProtectedRoute element={<TherapistResources />} requiredRole="therapist" />} />
+        <Route path="/availability" element={<ProtectedRoute element={<TherapistAvailability />} requiredRole="therapist" />} />
 
         {/* Root redirect based on role */}
         <Route path="/" element={
-          auth.isAuthenticated ? (
-            auth.role === 'patient' ? <PatientDashboard /> : 
-            auth.role === 'therapist' ? <TherapistHomepage /> : 
+          user ? (
+            user.role === 'patient' ? <PatientDashboard /> :
+            user.role === 'therapist' ? <TherapistHomepage /> :
             <Navigate to="/login" />
           ) : <Navigate to="/login" />
         } />
-        
-        {/* Catch-all for unauthorized */}
-        <Route path="*" element={<Navigate to={auth.isAuthenticated ? "/" : "/login"} />} />
 
-        </Routes>
+        {/* Catch-all for unauthorized */}
+        <Route path="*" element={<Navigate to={user ? "/" : "/login"} />} />
+      </Routes>
     </Router>
   );
 }

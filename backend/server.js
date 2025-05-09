@@ -4,11 +4,16 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
-const patientRoutes = require('./routes/patientRoutes')
+const patientRoutes = require('./routes/patientRoutes');
+const therapistRoutes = require('./routes/therapistRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
+const testRoutes = require('./routes/testRoutes');
 const path = require('path');
 const morgan = require('morgan');
 
+
 dotenv.config({ path: path.join(__dirname, '.env') });
+
 
 const app = express();
 
@@ -34,8 +39,14 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+// Register routes
 app.use(authRoutes);
 app.use(patientRoutes);
+app.use(therapistRoutes);
+app.use(appointmentRoutes);
+app.use(testRoutes);
+
+// Note: All endpoints have been moved to their respective route files
 
 const port = process.env.PORT || 3500;
 

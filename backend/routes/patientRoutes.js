@@ -1,7 +1,9 @@
 const mysql = require('mysql2/promise');
 const express = require('express');
 const db = require('../config/db.js');
-const {getTherapists, therapistAvailability, appointments, getTherapistById}= require('../controllers/patientController.js')
+const {getTherapists, therapistAvailability, appointments, getTherapistById} = require('../controllers/patientController.js');
+const {getTherapistAvailability} = require('../controllers/availabilityController');
+const {getPatientProfile} = require('../controllers/profileController');
 
 const router = express.Router();
 
@@ -17,12 +19,22 @@ const pool = mysql.createPool({
   });
 // API Endpoints
 
+// PATIENT PROFILE ROUTES
+
+// Get patient's own profile
+router.get('/api/patient/profile', getPatientProfile);
+
+// THERAPIST DISCOVERY ROUTES
+
 // Get all therapists with their specializations
 router.get('/api/therapists', getTherapists);
-  
-  // Get available slots for a therapist on a specific date
-  router.get('/api/therapists/:id/availability', therapistAvailability);
-  
+
+  // Get available slots for a therapist on a specific date with query parameters (e.g. ?date=2023-12-31)
+  router.get('/api/therapists/:id/availability/slots', therapistAvailability);
+
+  // Get all availability slots for a therapist (used in patient-side therapist profile)
+  router.get('/api/therapists/:therapistId/availability', getTherapistAvailability);
+
   // Book an appointment
   router.post('/api/appointments', appointments);
 
